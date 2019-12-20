@@ -1,13 +1,13 @@
 import arcpy
-import sys
+import sys #running in python2 version may cause problem like "ascii codec can't encode character"
 reload(sys)
-sys.setdefaultencoding('utf8')
+sys.setdefaultencoding('utf8') #By importing & reloading the sys module and set the value will clear the error
 
 class Toolbox(object):
     def __init__(self):
         """Define the toolbox (the name of the toolbox is the name of the
         .pyt file)."""
-        self.label = "Pangaeapy"
+        self.label = "pangaeapy"
         self.alias = "pangaeapy"
 	
         # List of tool classes associated with this toolbox
@@ -45,7 +45,7 @@ class UpdateMetadata(object):
 	dataset_id.filter.list = ['Long']
 	dataset_id.parameterDependencies = [input_dataset.name]
 
-	# Third Parameter
+	# Output parameter which clones the input dataset and updates the attribute table with values
 	output_dataset = arcpy.Parameter(
 		displayName="Output Vector Dataset",
 		name="output_dataset",
@@ -76,7 +76,7 @@ class UpdateMetadata(object):
 
     def execute(self, parameters, messages):
         """The source code of the tool."""
-	inputdataset = parameters[0].valueAsText
+	inputdataset = parameters[0].valueAsText #getting the parameters
 	datasetid = parameters[1].valueAsText
 		
 	arcpy.AddField_management(inputdataset, "citation", "TEXT" )
