@@ -7,8 +7,8 @@ class Toolbox(object):
     def __init__(self):
         """Define the toolbox (the name of the toolbox is the name of the
         .pyt file)."""
-        self.label = "pangaeapy"
-        self.alias = "pangaeapy"
+        self.label = "Update Metadata"
+        self.alias = "update_metadata"
 	
         # List of tool classes associated with this toolbox
         self.tools = [UpdateMetadata]
@@ -18,7 +18,7 @@ class UpdateMetadata(object):
     def __init__(self):
         """Define the tool (tool name is the name of the class)."""
         self.label = "Update Metadata"
-        self.description = "This toolbox get the metadata from the pangaeapy either by using a integer ID or an DOI of the dataset " + \
+        self.description = "This toolbox get the metadata from the pangaea website using pangaeapy module either by using a integer ID or an DOI of the dataset " + \
 	"and updates the Geodatabase with a metadata."
         self.canRunInBackground = True
 
