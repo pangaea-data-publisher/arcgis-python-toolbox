@@ -18,7 +18,7 @@ class UpdateMetadata(object):
     def __init__(self):
         """Define the tool (tool name is the name of the class)."""
         self.label = "Update Metadata"
-        self.description = "This toolbox get the metadata from the pangaea website using pangaeapy module either by using a integer ID or an DOI of the dataset " + \
+        self.description = "This toolbox get the metadata from the pangaea dataset using pangaeapy module either by using a integer ID or an DOI of the dataset " + \
 	"and updates the Geodatabase with a metadata."
         self.canRunInBackground = True
 
