@@ -78,9 +78,10 @@ class UpdateMetadata(object):
         """The source code of the tool."""
 	inputdataset = parameters[0].valueAsText #getting the parameters
 	datasetid = parameters[1].valueAsText
-		
-	arcpy.AddField_management(inputdataset, "citation", "TEXT" )
-	arcpy.AddField_management(inputdataset, "label", "TEXT" )
+	
+	#Define the field length if it is more than 255 characters
+	arcpy.AddField_management(inputdataset, "Citation", "TEXT" ,field_length = 1000)
+	arcpy.AddField_management(inputdataset, "Projects", "TEXT" ,field_length = 1000 )
 	
 	expression = '''
 from pangaeapy import PanDataSet
@@ -88,26 +89,38 @@ def getCitation(p_dataset_id):
 	ds=PanDataSet(p_dataset_id)
 	return ds.citation
 	
-def geteventlabel(p_dataset_id):
+def getprojects(p_dataset_id):
 	ds=PanDataSet(p_dataset_id)
-	a=[]
-	b=[]
+	
+	#def listOfTuples(l1,l2,l3):
+		#return list(map(lambda x,y,z:(x,y,z),l1,l2,l3))
+		
+	# Tuple can't be displayed in the attribute table consecutively. So the values are converted to list.
+	proj_label=[]
+	proj_name=[]
+	proj_URL=[]
 	for proj in ds.projects:
-		a.append(proj.label.text.strip())
-		b.append(proj.name.text.strip())
-		merge_label_name= [(a[i],b[i]) for i in range(0,len(a))]
-		proj_label_name=','.join(map(str,merge_label_name))
-	return proj_label_name
+		#Both label and name are hypertext. To get the text of the element text.strip() is used.
+		proj_label.append(proj.label.text.strip())
+		proj_name.append(proj.name.text.strip())
+		proj_URL.append(proj.URL.text.strip())
+		merge_projects= [(proj_label[i],proj_name[i],proj_URL[i]) for i in range(0,len(proj_label))]
+		
+		#list values are not compatible with field values. so the values are converted to tuples to display in the attribute table
+		projects=','.join(map(str,merge_projects))
+		
+		#projects=listOfTuples(proj_label,proj_name,proj_URL)
+	return projects
 '''
 
 
 	arcpy.CalculateField_management(inputdataset,
-                                    "citation",
+                                    "Citation",
                                     'getCitation(!p_dataset_id!)',
                                     'PYTHON_9.3',
                                     expression)
 									
 	arcpy.CalculateField_management(inputdataset,
-                                    "label",
-                                    'geteventlabel(!p_dataset_id!)',
+                                    "Projects",
+                                    'getprojects(!p_dataset_id!)',
                                     'PYTHON_9.3')
