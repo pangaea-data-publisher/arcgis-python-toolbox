@@ -82,6 +82,7 @@ class UpdateMetadata(object):
 	#Define the field length if it is more than 255 characters
 	arcpy.AddField_management(inputdataset, "Citation", "TEXT" ,field_length = 1000)
 	arcpy.AddField_management(inputdataset, "Projects", "TEXT" ,field_length = 1000 )
+	arcpy.AddField_management(inputdataset, "Events", "TEXT" ,field_length = 1000 )
 	
 	expression = '''
 from pangaeapy import PanDataSet
@@ -91,9 +92,10 @@ def getCitation(p_dataset_id):
 	
 def getprojects(p_dataset_id):
 	ds=PanDataSet(p_dataset_id)
+	projects=""
 	
-	#def listOfTuples(l1,l2,l3):
-		#return list(map(lambda x,y,z:(x,y,z),l1,l2,l3))
+	def listOfTuples(l1,l2,l3):
+		return list(map(lambda x,y,z:(x,y,z),l1,l2,l3))
 		
 	# Tuple can't be displayed in the attribute table consecutively. So the values are converted to list.
 	proj_label=[]
@@ -104,13 +106,34 @@ def getprojects(p_dataset_id):
 		proj_label.append(proj.label.text.strip())
 		proj_name.append(proj.name.text.strip())
 		proj_URL.append(proj.URL.text.strip())
-		merge_projects= [(proj_label[i],proj_name[i],proj_URL[i]) for i in range(0,len(proj_label))]
+		#merge_projects= [(proj_label[i],proj_name[i],proj_URL[i]) for i in range(0,len(proj_label))]
+		merge_projects=listOfTuples(proj_label,proj_name,proj_URL)
 		
-		#list values are not compatible with field values. so the values are converted to tuples to display in the attribute table
+		#converting a python list to a string for display in attribute table
 		projects=','.join(map(str,merge_projects))
 		
-		#projects=listOfTuples(proj_label,proj_name,proj_URL)
 	return projects
+	
+def getevents(p_dataset_id):
+	ds=PanDataSet(p_dataset_id)
+	events=""
+	
+	def listOfTuples(l1,l2,l3):
+		return list(map(lambda x,y,z:(x,y,z),l1,l2,l3))
+	
+	event_label=[]
+	start_latitude=[]
+	start_longitude=[]
+	for eve in ds.events:
+		event_label.append(eve.label)
+		start_latitude.append("Latitude Start:{}".format(eve.latitude))
+		start_longitude.append("Longitude Start:{}".format(eve.longitude))
+		merge_events=listOfTuples(event_label,start_latitude,start_longitude)
+		
+		#converting a python list to a string for display in attribute table
+		events=','.join(map(str,merge_events))
+		
+	return events
 '''
 
 
@@ -123,4 +146,9 @@ def getprojects(p_dataset_id):
 	arcpy.CalculateField_management(inputdataset,
                                     "Projects",
                                     'getprojects(!p_dataset_id!)',
+                                    'PYTHON_9.3')
+									
+	arcpy.CalculateField_management(inputdataset,
+                                    "Events",
+                                    'getevents(!p_dataset_id!)',
                                     'PYTHON_9.3')
