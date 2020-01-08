@@ -96,7 +96,9 @@ def getprojects(p_dataset_id):
 	
 	def listOfTuples(l1,l2,l3):
 		return list(map(lambda x,y,z:(x,y,z),l1,l2,l3))
-		
+	
+	"""The toolbox is designed to the store the values in list form in python and it is converted to string format
+  	to display in the attribute table of geodatabase. Because the list format to store values in geodatabase is not supported."""
 	# Tuple can't be displayed in the attribute table consecutively. So the values are converted to list.
 	proj_label=[]
 	proj_name=[]
