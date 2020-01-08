@@ -82,7 +82,7 @@ class UpdateMetadata(object):
 	#Define the field length if it is more than 255 characters
 	arcpy.AddField_management(inputdataset, "Citation", "TEXT" ,field_length = 1000)
 	arcpy.AddField_management(inputdataset, "Projects", "TEXT" ,field_length = 1000 )
-	arcpy.AddField_management(inputdataset, "Events", "TEXT" ,field_length = 1000 )
+	arcpy.AddField_management(inputdataset, "Events", "TEXT" ,field_length = 5000 )
 	
 	expression = '''
 from pangaeapy import PanDataSet
@@ -118,17 +118,35 @@ def getevents(p_dataset_id):
 	ds=PanDataSet(p_dataset_id)
 	events=""
 	
-	def listOfTuples(l1,l2,l3):
-		return list(map(lambda x,y,z:(x,y,z),l1,l2,l3))
+	def listOfTuples(l1,l2,l3,l4,l5,l6,l7,l8,l9,l10,l11):
+		return list(map(lambda a,b,c,d,e,f,g,h,i,j,k:(a,b,c,d,e,f,g,h,i,j,k),l1,l2,l3,l4,l5,l6,l7,l8,l9,l10,l11))
 	
 	event_label=[]
 	start_latitude=[]
 	start_longitude=[]
+	end_latitude=[]
+	end_longitude=[]
+	start_datetime=[]
+	end_datetime=[]
+	location=[]
+	campaign=[]
+	basis=[]
+	device=[]
 	for eve in ds.events:
 		event_label.append(eve.label)
 		start_latitude.append("Latitude Start:{}".format(eve.latitude))
 		start_longitude.append("Longitude Start:{}".format(eve.longitude))
-		merge_events=listOfTuples(event_label,start_latitude,start_longitude)
+		end_latitude.append("Latitude End:{}".format(eve.latitude2))
+		end_longitude.append("Longitude End:{}".format(eve.longitude2))
+		start_datetime.append("Date/Time Start:{}".format(eve.datetime))
+		end_datetime.append("Date/Time End:{}".format(eve.datetime2))
+		location.append("Location:{}".format(eve.location))
+		campaign.append("Campaign:{}".format(eve.campaign))
+		basis.append("Basis:{}".format(eve.basis))
+		device.append("Device:{}".format(eve.device))
+		merge_events=listOfTuples(event_label,start_latitude,start_longitude,end_latitude,end_longitude,start_datetime,end_datetime,location,campaign,basis,device)
+		
+		#final_merged_events=[tuple(xi for xi in x if xi is not None) for x in merge_events]
 		
 		#converting a python list to a string for display in attribute table
 		events=','.join(map(str,merge_events))
