@@ -33,17 +33,6 @@ class UpdateMetadata(object):
 		parameterType="Required",
 		direction="Input")
 		
-	#Second Parameter i.e., Option to get the dataset id from the geodatabase
-	dataset_id = arcpy.Parameter(
-		displayName="Dataset ID",
-		name="dataset_id",
-		datatype="Field",
-		parameterType="Required",
-		direction="Input")
-		
-	# Set the filter to accept only fields that are Long type
-	dataset_id.filter.list = ['Long']
-	dataset_id.parameterDependencies = [input_dataset.name]
 
 	# Output parameter which clones the input dataset and updates the attribute table with values
 	output_dataset = arcpy.Parameter(
@@ -56,7 +45,7 @@ class UpdateMetadata(object):
 	output_dataset.parameterDependencies = [input_dataset.name]
 	#output_dataset.schema.clone = True
 
-	params = [input_dataset, dataset_id, output_dataset]
+	params = [input_dataset, output_dataset]
 	return params
 
     def isLicensed(self):
@@ -77,7 +66,6 @@ class UpdateMetadata(object):
     def execute(self, parameters, messages):
         """The source code of the tool."""
 	inputdataset = parameters[0].valueAsText #getting the parameters
-	datasetid = parameters[1].valueAsText
 	
 	#Define the field length if it is more than 255 characters
 	arcpy.AddField_management(inputdataset, "Citation", "TEXT" ,field_length = 1000)
@@ -86,6 +74,7 @@ class UpdateMetadata(object):
 	
 	expression = '''
 from pangaeapy import PanDataSet
+
 def getCitation(p_dataset_id):
 	ds=PanDataSet(p_dataset_id)
 	return ds.citation
@@ -103,6 +92,7 @@ def getprojects(p_dataset_id):
 	proj_label=[]
 	proj_name=[]
 	proj_URL=[]
+	
 	for proj in ds.projects:
 		#Both label and name are hypertext. To get the text of the element text.strip() is used.
 		proj_label.append(proj.label.text.strip())
@@ -112,7 +102,7 @@ def getprojects(p_dataset_id):
 		merge_projects=listOfTuples(proj_label,proj_name,proj_URL)
 		
 		#converting a python list to a string for display in attribute table
-		projects=','.join(map(str,merge_projects))
+		projects='/n'.join(map(str,merge_projects))
 		
 	return projects
 	
@@ -134,6 +124,7 @@ def getevents(p_dataset_id):
 	campaign=[]
 	basis=[]
 	device=[]
+	
 	for eve in ds.events:
 		event_label.append(eve.label)
 		start_latitude.append("Latitude Start:{}".format(eve.latitude))
@@ -151,7 +142,7 @@ def getevents(p_dataset_id):
 		#final_merged_events=[tuple(xi for xi in x if xi is not None) for x in merge_events]
 		
 		#converting a python list to a string for display in attribute table
-		events=','.join(map(str,merge_events))
+		events='/n'.join(map(str,merge_events))
 		
 	return events
 '''
@@ -159,7 +150,7 @@ def getevents(p_dataset_id):
 
 	arcpy.CalculateField_management(inputdataset,
                                     "Citation",
-                                    'getCitation(!p_dataset_id!)',
+                                    'getCitation(!p_dataset_id!)', #dataset id has to be named as p_dataset_id in the geodatabase
                                     'PYTHON_9.3',
                                     expression)
 									
