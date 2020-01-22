@@ -1,8 +1,10 @@
 import arcpy
+import time
+from arcpy import env
 import sys #running in python2 version may cause problem like "ascii codec can't encode character"
 reload(sys)
 sys.setdefaultencoding('utf8') #By importing & reloading the sys module and set the value will clear the error
-
+ 
 class Toolbox(object):
     def __init__(self):
         """Define the toolbox (the name of the toolbox is the name of the
@@ -20,7 +22,7 @@ class UpdateMetadata(object):
         self.label = "Update Metadata"
         self.description = "This toolbox get the metadata from the pangaea dataset using pangaeapy module either by using a integer ID or an DOI of the dataset " + \
 	"and updates the Geodatabase with a metadata."
-        self.canRunInBackground = True
+        self.canRunInBackground = False
 
     def getParameterInfo(self):
         """Define parameter definitions"""
@@ -33,7 +35,6 @@ class UpdateMetadata(object):
 		parameterType="Required",
 		direction="Input")
 		
-
 	# Output parameter which clones the input dataset and updates the attribute table with values
 	output_dataset = arcpy.Parameter(
 		displayName="Output Vector Dataset",
@@ -53,30 +54,38 @@ class UpdateMetadata(object):
         return True
 
     def updateParameters(self, parameters):
-        """Modify the values and properties of parameters before internal
-        validation is performed.  This method is called whenever a parameter
-        has been changed."""
+	
         return
 
     def updateMessages(self, parameters):
         """Modify the messages created by internal validation for each tool
         parameter.  This method is called after internal validation."""
+	
         return
 
     def execute(self, parameters, messages):
         """The source code of the tool."""
 	inputdataset = parameters[0].valueAsText #getting the parameters
 	
-	#Define the field length if it is more than 255 characters
-	arcpy.AddField_management(inputdataset, "Citation", "TEXT" ,field_length = 1000)
-	arcpy.AddField_management(inputdataset, "Projects", "TEXT" ,field_length = 1000 )
-	arcpy.AddField_management(inputdataset, "Events", "TEXT" ,field_length = 5000 )
+	fields = arcpy.ListFields(inputdataset)
+	field_to_add = ("Citation","Projects","Events")
+	if field_to_add not in fields:
+		#Define the field length if it is more than 255 characters
+		arcpy.AddField_management(inputdataset, "Citation", "TEXT" ,field_length = 1000)
+		arcpy.AddField_management(inputdataset, "Projects", "TEXT" ,field_length = 1000 )
+		arcpy.AddField_management(inputdataset, "Events", "TEXT" ,field_length = 5000 )
 	
 	expression = '''
 from pangaeapy import PanDataSet
-
+rec = 0
 def getCitation(p_dataset_id):
-	ds=PanDataSet(p_dataset_id)
+	global rec
+	rec += 1
+	if (rec % 5 != 0):
+		ds=PanDataSet(p_dataset_id)
+	else:
+		time.sleep(2)
+		ds=PanDataSet(p_dataset_id)
 	return ds.citation
 	
 def getprojects(p_dataset_id):
@@ -98,12 +107,15 @@ def getprojects(p_dataset_id):
 		proj_label.append(proj.label.text.strip())
 		proj_name.append(proj.name.text.strip())
 		proj_URL.append(proj.URL.text.strip())
-		#merge_projects= [(proj_label[i],proj_name[i],proj_URL[i]) for i in range(0,len(proj_label))]
 		merge_projects=listOfTuples(proj_label,proj_name,proj_URL)
 		
-		#converting a python list to a string for display in attribute table
-		projects='/n'.join(map(str,merge_projects))
-		
+		global rec
+		rec += 1
+		if (rec % 5 != 0):
+			projects='{0}'.format(merge_projects)
+		else:
+			time.sleep(2)
+			projects='{0}'.format(merge_projects)
 	return projects
 	
 def getevents(p_dataset_id):
@@ -139,11 +151,13 @@ def getevents(p_dataset_id):
 		device.append("Device:{}".format(eve.device))
 		merge_events=listOfTuples(event_label,start_latitude,start_longitude,end_latitude,end_longitude,start_datetime,end_datetime,location,campaign,basis,device)
 		
-		#final_merged_events=[tuple(xi for xi in x if xi is not None) for x in merge_events]
-		
-		#converting a python list to a string for display in attribute table
-		events='/n'.join(map(str,merge_events))
-		
+		global rec
+		rec += 1
+		if (rec % 5 != 0):
+			events='{0}'.format(merge_events)
+		else:
+			time.sleep(2)
+			events='{0}'.format(merge_events)
 	return events
 '''
 
@@ -163,3 +177,4 @@ def getevents(p_dataset_id):
                                     "Events",
                                     'getevents(!p_dataset_id!)',
                                     'PYTHON_9.3')
+									
