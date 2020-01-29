@@ -68,12 +68,14 @@ class UpdateMetadata(object):
 	inputdataset = parameters[0].valueAsText #getting the parameters
 	
 	fields = arcpy.ListFields(inputdataset)
-	field_to_add = ("Citation","Projects","Events")
+	field_to_add = ("Citation","Access_Rights","Projects","Events","License")
 	if field_to_add not in fields:
 		#Define the field length if it is more than 255 characters
 		arcpy.AddField_management(inputdataset, "Citation", "TEXT" ,field_length = 1000)
+		arcpy.AddField_management(inputdataset, "Access_Rights", "TEXT" ,field_length = 1000 )
 		arcpy.AddField_management(inputdataset, "Projects", "TEXT" ,field_length = 1000 )
 		arcpy.AddField_management(inputdataset, "Events", "TEXT" ,field_length = 5000 )
+		arcpy.AddField_management(inputdataset, "License", "TEXT" ,field_length = 1000 )
 	
 	expression = '''
 from pangaeapy import PanDataSet
@@ -83,10 +85,21 @@ def getCitation(p_dataset_id):
 	rec += 1
 	if (rec % 5 != 0):
 		ds=PanDataSet(p_dataset_id)
+		arcpy.AddMessage("I am running: " +str(rec))
 	else:
 		time.sleep(2)
 		ds=PanDataSet(p_dataset_id)
 	return ds.citation
+	
+def getAccessRights(p_dataset_id):
+	global rec
+	rec += 1
+	if (rec % 5 != 0):
+		ds=PanDataSet(p_dataset_id)
+	else:
+		time.sleep(2)
+		ds=PanDataSet(p_dataset_id)
+	return ds.loginstatus
 	
 def getprojects(p_dataset_id):
 	ds=PanDataSet(p_dataset_id)
@@ -159,6 +172,24 @@ def getevents(p_dataset_id):
 			time.sleep(2)
 			events='{0}'.format(merge_events)
 	return events
+	
+def getLicense(p_dataset_id):
+	ds=PanDataSet(p_dataset_id)
+	license = ""
+	
+	for lic in ds.license:
+		label = lic.label.text.strip()
+		name = lic.name.text.strip()
+		URI = lic.URI.text.strip()
+		
+		global rec
+		rec += 1
+		if (rec % 5 != 0):
+			license = '{0},{1},{2}'.format(label,name,URI)
+		else:
+			time.sleep(2)
+			license = '{0},{1},{2}'.format(label,name,URI)
+	return license
 '''
 
 
@@ -169,6 +200,11 @@ def getevents(p_dataset_id):
                                     expression)
 									
 	arcpy.CalculateField_management(inputdataset,
+                                    "Access_Rights",
+                                    'getAccessRights(!p_dataset_id!)',
+                                    'PYTHON_9.3')
+									
+	arcpy.CalculateField_management(inputdataset,
                                     "Projects",
                                     'getprojects(!p_dataset_id!)',
                                     'PYTHON_9.3')
@@ -176,5 +212,10 @@ def getevents(p_dataset_id):
 	arcpy.CalculateField_management(inputdataset,
                                     "Events",
                                     'getevents(!p_dataset_id!)',
+                                    'PYTHON_9.3')
+									
+	arcpy.CalculateField_management(inputdataset,
+                                    "License",
+                                    'getLicense(!p_dataset_id!)',
                                     'PYTHON_9.3')
 									
