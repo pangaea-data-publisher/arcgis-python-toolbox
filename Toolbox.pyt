@@ -1,3 +1,8 @@
+"""
+Author: Aarthi Balamurugan  
+ArcGIS Pro version: 2.3
+Python version: 3.6.6
+"""
 # -*- coding: utf-8 -*-
 import arcpy
 import os
@@ -63,20 +68,27 @@ class UpdateMetadata(object):
         
         #If the fields are not already in the attribute table, add the fields
         
-        fields = arcpy.ListFields(inputdataset)
-        field_to_add = ["Citation","Access_Rights","Projects","Events","Campaign","License"]
-        
-        if field_to_add not in fields:
+        fields = [f.name for f in arcpy.ListFields(inputdataset)]
+        field_to_add = ["Citation","Permission","Projects","Events","Campaign","License"]
+		
+        if field_to_add[0] not in fields:
                 #Define the field length if it is more than 255 characters
                 arcpy.AddField_management(inputdataset, "Citation", "TEXT" ,field_length = 1000)
-                arcpy.AddField_management(inputdataset, "Access_Rights", "TEXT" ,field_length = 1000 )
+        if field_to_add[1] not in fields:
+                arcpy.AddField_management(inputdataset, "Permission", "TEXT" ,field_length = 1000)
+        if field_to_add[2] not in fields:
                 arcpy.AddField_management(inputdataset, "Projects", "TEXT" ,field_length = 1000 )
+        if field_to_add[3] not in fields:
                 arcpy.AddField_management(inputdataset, "Events", "TEXT" ,field_length = 5000 )
+        if field_to_add[4] not in fields:
                 arcpy.AddField_management(inputdataset, "Campaign", "TEXT" ,field_length = 5000 )
+        if field_to_add[5] not in fields:
                 arcpy.AddField_management(inputdataset, "License", "TEXT" ,field_length = 1000 )
-        
+        else:
+                arcpy.AddMessage("Added the fields")
+				
         # Assigning the fields to work with in update cursor
-        fields = [datasetid,"Citation","Access_Rights","Projects","Events","Campaign","License"]
+        fields = [datasetid,"Citation","Permission","Projects","Events","Campaign","License"]
 
         #Function to get all the project attributes from the pangaea metadata
         def getprojects(ds):
@@ -243,7 +255,7 @@ class UpdateMetadata(object):
                 start = time.time()
                 oldrow = " "
                 for row in cursor:
-                        if row[1] is None or row[1] == "":
+                        if (row[1] or row[2] or row[3] or row[4] or row[5] or row[6] is None) or (row[1] or row[2] or row[3] or row[4] or row[5] or row[6] == ""):
                                 if oldrow is not None and oldrow[0] == row[0]:
                                         row[1] = row_citation
                                         row[2] = row_loginstatus
