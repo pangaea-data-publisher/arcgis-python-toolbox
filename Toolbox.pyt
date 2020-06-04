@@ -280,18 +280,15 @@ class UpdateMetadata(object):
                                         row[4] = row_events
                                         row[5] = row_campaign
                                         row[6] = row_license
-                                        arcpy.AddMessage("Hey Aarthi I am running:" +str(rec))
                                         cursor.updateRow(row)
                                         oldrow = row
                                         rec=rec+1
                                         if (rec % 59 == 0):
                                                 end = time.time()
-                                                arcpy.AddMessage("I am inside")
                                                 if ((end-start) <= 30):
                                                         wait = end-start
                                                         time.sleep(33-wait)
                                                         start = time.time()
-                                                        arcpy.AddMessage("going again")
                                                         continue
                                                 else:
                                                         start = time.time()
